@@ -48,4 +48,27 @@ class Trainer:
         avg_loss = total_loss / len(dataloader)
         accuracy = correct_predictions / total_predictions
         logger.info(f"Epoch completed - Final Loss: {avg_loss:.4f}, Final Accuracy: {accuracy:.4f}")
+        return avg_loss, accuracy
+        
+    def evaluate(self, dataloader: DataLoader, criterion: nn.Module) -> Tuple[float, float]:
+        self.model.eval()
+        total_loss = 0
+        correct_predictions = 0
+        total_predictions = 0
+        
+        with torch.no_grad():
+            for batch in tqdm(dataloader, desc="Evaluating"):
+                labels, text = batch
+                labels, text = labels.to(self.device), text.to(self.device)
+                
+                predictions = self.model(text)
+                loss = criterion(predictions, labels)
+                
+                total_loss += loss.item()
+                predicted_labels = predictions.argmax(dim=1)
+                correct_predictions += (predicted_labels == labels).sum().item()
+                total_predictions += labels.size(0)
+        
+        avg_loss = total_loss / len(dataloader)
+        accuracy = correct_predictions / total_predictions
         return avg_loss, accuracy 

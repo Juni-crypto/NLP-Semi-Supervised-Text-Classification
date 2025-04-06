@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class LSTMClassifier(nn.Module):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_dim: int, output_dim: int, 
@@ -26,4 +27,11 @@ class LSTMClassifier(nn.Module):
         else:
             hidden = hidden[-1,:,:]
             
-        return self.fc(self.dropout(hidden)) 
+        # Add dropout to the final hidden state
+        hidden = self.dropout(hidden)
+        
+        # Get logits from the fully connected layer
+        logits = self.fc(hidden)
+        
+        # Apply softmax to get probabilities
+        return F.log_softmax(logits, dim=1) 
